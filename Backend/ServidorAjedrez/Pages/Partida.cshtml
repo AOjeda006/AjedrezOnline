@@ -1,0 +1,97 @@
+@page
+@model PartidaModel
+@{
+    ViewData["Title"] = "Partida - ServidorAjedrez";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Información de la Partida -->
+        <div class="col-md-3">
+            <div class="card mb-3">
+                <div class="card-header">Información</div>
+                <div class="card-body">
+                    <p><strong>Tu Color:</strong> <span id="playerColor">-</span></p>
+                    <p><strong>Oponente:</strong> <span id="opponentName">-</span></p>
+                    <p><strong>Turno:</strong> <span id="currentTurn">Blancas</span></p>
+                    <p><strong>Número de Turnos:</strong> <span id="turnCount">0</span></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Acciones</div>
+                <div class="card-body">
+                    <button class="btn btn-warning btn-sm w-100 mb-2" id="undoBtn">Deshacer</button>
+                    <button class="btn btn-secondary btn-sm w-100 mb-2" id="drawBtn">Tablas</button>
+                    <button class="btn btn-danger btn-sm w-100" id="surrenderBtn">Rendirse</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tablero -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div id="board" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background-color: #999; padding: 10px; border-radius: 8px;">
+                        <!-- El tablero se genera aquí con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Piezas Capturadas -->
+        <div class="col-md-3">
+            <div class="card mb-3">
+                <div class="card-header">Piezas Eliminadas</div>
+                <div class="card-body">
+                    <p><strong>Blancas:</strong></p>
+                    <div id="capturedWhite" style="min-height: 50px;"></div>
+                    
+                    <p><strong>Negras:</strong></p>
+                    <div id="capturedBlack" style="min-height: 50px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+<div class="modal fade" id="promotionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Promoción de Peón</h5>
+            </div>
+            <div class="modal-body">
+                <p>Selecciona la pieza a la cual promocionar el peón:</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" id="promoteToQueen">Reina</button>
+                    <button class="btn btn-outline-secondary" id="promoteToRook">Torre</button>
+                    <button class="btn btn-outline-info" id="promoteToBishop">Alfil</button>
+                    <button class="btn btn-outline-warning" id="promoteToKnight">Caballo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="gameEndModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Partida Finalizada</h5>
+            </div>
+            <div class="modal-body" id="gameEndMessage">
+                <!-- El mensaje se genera con JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="backToMenuBtn">Volver al Menú</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/partida.js"></script>
+}
