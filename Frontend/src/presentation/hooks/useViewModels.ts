@@ -13,6 +13,7 @@
  *   sobrevivir durante toda la partida; la limpieza la hace el VM en `volverAlMenu()`.
  */
 
+import { logger } from '../../core/logger';
 import { useEffect, useMemo } from 'react';
 import { container } from '../../core/container';
 import { clearPendingPartida, getPendingPartida } from '../../core/gameState';
@@ -32,14 +33,14 @@ import { PartidaVM } from '../viewmodels/PartidaVM';
  */
 const safeBind = (obj: any, fnName: string) => {
   if (!obj) {
-    console.warn(`[safeBind] ${fnName}: obj es null/undefined`);
+    logger.warn(`[safeBind] ${fnName}: obj es null/undefined`);
     return () => {};
   }
   const fn = (obj as any)[fnName];
   if (typeof fn === 'function') {
     return fn.bind(obj);
   } else {
-    console.error(`[safeBind] ${fnName}: NO es una función! tipo:`, typeof fn);
+    logger.error(`[safeBind] ${fnName}: NO es una función! tipo:`, typeof fn);
     return () => {};
   }
 };
@@ -65,10 +66,10 @@ const determinarColorLocal = (partida: Partida, miNombre: string, miConnectionId
     if (miNombreNorm && nnNorm && miNombreNorm === nnNorm) return 'Negra';
     if (miNombreNorm && nbNorm && miNombreNorm === nbNorm) return 'Blanca';
 
-    console.warn('[WARN determinarColorLocal] No se pudo identificar el color (connectionId/nombre); usando fallback Blanca');
+    logger.warn('[WARN determinarColorLocal] No se pudo identificar el color (connectionId/nombre); usando fallback Blanca');
     return 'Blanca';
   } catch (err) {
-    console.error('[ERROR determinarColorLocal]', err);
+    logger.error('[ERROR determinarColorLocal]', err);
     return 'Blanca';
   }
 };
@@ -131,13 +132,13 @@ export const usePartida = () => {
       try {
         // ← CORRECCIÓN: pasar también miNombre al inicializar la VM
         viewModel.inicializarPartida(pending.partida, miColor, pending.miNombre);
-        console.log('[TRACE hook] VM inicializada desde pendingPartida:', {
+        logger.log('[TRACE hook] VM inicializada desde pendingPartida:', {
           id: pending.partida.id,
           miColor,
           miNombre: pending.miNombre,
         });
       } catch (err) {
-        console.error('[ERROR hook] inicializarPartida (pending) falló:', err);
+        logger.error('[ERROR hook] inicializarPartida (pending) falló:', err);
       }
       // Con la partida ya inicializada no es necesario suscribirse al evento.
       return;
@@ -145,12 +146,12 @@ export const usePartida = () => {
 
     // ── FALLBACK: la partida aún no llegó (caso poco probable, p.ej. navegación
     //    manual a la pantalla). Nos suscribimos por si acaso.
-    console.log('[TRACE hook] No hay pendingPartida, suscribiendo a subscribePartidaIniciada...');
+    logger.log('[TRACE hook] No hay pendingPartida, suscribiendo a subscribePartidaIniciada...');
 
     const onPartidaIniciada = (partida: Partida) => {
-      console.log('[TRACE hook] PartidaIniciada recibida en hook:', { id: partida.id });
+      logger.log('[TRACE hook] PartidaIniciada recibida en hook:', { id: partida.id });
       if (!mounted) {
-        console.warn('[TRACE hook] componente desmontado, ignorando partida');
+        logger.warn('[TRACE hook] componente desmontado, ignorando partida');
         return;
       }
 
@@ -170,16 +171,16 @@ export const usePartida = () => {
       try {
         // ← CORRECCIÓN: pasar miNombre al inicializar la VM
         viewModel.inicializarPartida(partida, miColor, miNombre);
-        console.log('[TRACE hook] VM inicializada (fallback):', { id: partida.id, miColor, miNombre });
+        logger.log('[TRACE hook] VM inicializada (fallback):', { id: partida.id, miColor, miNombre });
       } catch (err) {
-        console.error('[ERROR hook] inicializarPartida (fallback) falló:', err);
+        logger.error('[ERROR hook] inicializarPartida (fallback) falló:', err);
       }
     };
 
     try {
       useCase.subscribePartidaIniciada(onPartidaIniciada);
     } catch (err) {
-      console.error('[ERROR hook] Error suscribiendo a PartidaIniciada:', err);
+      logger.error('[ERROR hook] Error suscribiendo a PartidaIniciada:', err);
     }
 
     return () => {

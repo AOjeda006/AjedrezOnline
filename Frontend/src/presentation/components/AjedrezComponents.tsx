@@ -9,6 +9,7 @@
  * juego (esa vive en {@link PartidaVM} y {@link Tablero}).
  */
 
+import { logger } from '../../core/logger';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import {
@@ -275,7 +276,7 @@ export const BotonesAccion: React.FC<BotonesAccionProps> = ({
     solicitadasTablas
 }) => {
     const handleRendirse = () => {
-        console.log('[BotonesAccion] Rendirse llamado');
+        logger.log('[BotonesAccion] Rendirse llamado');
         rendirse();
     };
 
@@ -400,7 +401,7 @@ interface ContadorPiezasProps {
 export const ContadorPiezas: React.FC<ContadorPiezasProps> = observer(({ piezasEliminadas, color }) => {
     const tipos: TipoPieza[] = ['Peon', 'Torre', 'Caballo', 'Alfil', 'Reina'];
 
-    console.log('[ContadorPiezas] Rendering with', {
+    logger.log('[ContadorPiezas] Rendering with', {
         color,
         piezasSize: piezasEliminadas.size,
         piezas: Array.from(piezasEliminadas.entries())

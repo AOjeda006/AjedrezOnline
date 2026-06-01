@@ -9,6 +9,7 @@
  * `window.location`.
  */
 
+import { logger } from '../../core/logger';
 import React from 'react';
 import { View, ScrollView, StyleSheet, Text } from 'react-native';
 import { observer } from 'mobx-react-lite';
@@ -66,7 +67,7 @@ const IdentificacionScreenInner: React.FC = () => {
         // forzamos recarga completa en web para asegurar que la ruta se cargue
         window.location.assign(path);
       } else {
-        console.warn('No hay router disponible para navegar.');
+        logger.warn('No hay router disponible para navegar.');
       }
     } finally {
       setTimeout(() => actions.setLoading(false), 500);

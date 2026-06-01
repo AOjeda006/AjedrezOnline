@@ -3,16 +3,6 @@ using ServidorAjedrez.Infrastructure.DI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
-
-// Session
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(60);
-});
-
 // SignalR configuration
 builder.Services.AddSignalR(options =>
 {
@@ -52,24 +42,16 @@ var app = builder.Build();
 // Pipeline
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
 app.UseRouting();
 
 // Enable CORS
 app.UseCors("AllowReactNative");
 
-// Enable Session (IMPORTANTE)
-app.UseSession();
-
-app.UseAuthorization();
-
-app.MapRazorPages();
 app.MapHub<AjedrezHub>("/ajedrezHub", options =>
 {
     options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets |

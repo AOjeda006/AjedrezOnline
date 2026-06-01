@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServidorAjedrez", "Servidor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{82816E5C-12E0-477A-8E95-04FF058CC90B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{8FCEE42D-6148-4B08-97CA-DC205B51D5CC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{5872AEB3-BAA3-FE31-B0EB-0FB6DBEDCF83}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{82816E5C-12E0-477A-8E95-04FF058CC90B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82816E5C-12E0-477A-8E95-04FF058CC90B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82816E5C-12E0-477A-8E95-04FF058CC90B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FCEE42D-6148-4B08-97CA-DC205B51D5CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FCEE42D-6148-4B08-97CA-DC205B51D5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FCEE42D-6148-4B08-97CA-DC205B51D5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FCEE42D-6148-4B08-97CA-DC205B51D5CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5872AEB3-BAA3-FE31-B0EB-0FB6DBEDCF83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5872AEB3-BAA3-FE31-B0EB-0FB6DBEDCF83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5872AEB3-BAA3-FE31-B0EB-0FB6DBEDCF83}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -14,6 +14,7 @@
  * - El nombre del jugador viaja como parámetro de query en la URL del hub.
  */
 
+import { logger } from '../../core/logger';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { ConnectionState } from '../../core/types';
 
@@ -72,31 +73,31 @@ export class SignalRAjedrezDataSource {
         try {
           await this.hubConnection.stop();
         } catch (err) {
-          console.warn('[SignalR DS] Error al detener conexión previa:', err);
+          logger.warn('[SignalR DS] Error al detener conexión previa:', err);
         }
         this.hubConnection = null;
       }
 
-      console.log('[SignalR DS] buildConnection con nombre:', jugadorNombre);
+      logger.log('[SignalR DS] buildConnection con nombre:', jugadorNombre);
       this.hubConnection = this.buildConnection(url, jugadorNombre);
 
       // Re-attach global lifecycle handlers
       this.hubConnection.onreconnecting(() => {
         this.connectionState = 'Reconnecting';
         this.emitEvent('connectionStateChanged', 'Reconnecting');
-        console.log('[SignalR DS] onreconnecting');
+        logger.log('[SignalR DS] onreconnecting');
       });
 
       this.hubConnection.onreconnected(() => {
         this.connectionState = 'Connected';
         this.emitEvent('connectionStateChanged', 'Connected');
-        console.log('[SignalR DS] onreconnected');
+        logger.log('[SignalR DS] onreconnected');
       });
 
       this.hubConnection.onclose(() => {
         this.connectionState = 'Disconnected';
         this.emitEvent('connectionStateChanged', 'Disconnected');
-        console.log('[SignalR DS] onclose');
+        logger.log('[SignalR DS] onclose');
       });
 
       // IMPORTANT: si ya había handlers registrados antes de crear la conexión,
@@ -111,25 +112,25 @@ export class SignalRAjedrezDataSource {
             });
             this.attachedBridges.add(eventName);
           } catch (err) {
-            console.warn(`[SignalR DS] No se pudo attach event ${eventName} al hub:`, err);
+            logger.warn(`[SignalR DS] No se pudo attach event ${eventName} al hub:`, err);
           }
         }
       }
 
-      console.log('[SignalR DS] iniciando hubConnection.start()');
+      logger.log('[SignalR DS] iniciando hubConnection.start()');
       await this.hubConnection.start();
       this.connectionState = 'Connected';
       this.emitEvent('connectionStateChanged', 'Connected');
-      console.log('[SignalR DS] Conexión establecida (Connected)');
+      logger.log('[SignalR DS] Conexión establecida (Connected)');
 
       // Set player name after connecting
       if (jugadorNombre) {
         await this.invoke('SetNombreJugador', jugadorNombre);
-        console.log('[SignalR DS] Nombre de jugador establecido:', jugadorNombre);
+        logger.log('[SignalR DS] Nombre de jugador establecido:', jugadorNombre);
       }
     } catch (error) {
       this.connectionState = 'Disconnected';
-      console.error('[SignalR DS] Error conectando a SignalR:', error);
+      logger.error('[SignalR DS] Error conectando a SignalR:', error);
       throw new Error(`No se pudo conectar a ${url}: ${error}`);
     }
   }
@@ -142,10 +143,10 @@ export class SignalRAjedrezDataSource {
         this.hubConnection = null;
         // Los puentes desaparecen con la conexión; se reengancharán en el próximo start()
         this.attachedBridges.clear();
-        console.log('[SignalR DS] Conexión detenida');
+        logger.log('[SignalR DS] Conexión detenida');
       }
     } catch (error) {
-      console.error('[SignalR DS] Error deteniendo conexión SignalR:', error);
+      logger.error('[SignalR DS] Error deteniendo conexión SignalR:', error);
     }
   }
 
@@ -180,10 +181,10 @@ export class SignalRAjedrezDataSource {
     } catch (error: any) {
       const msg = error?.message ?? '';
       if (msg.includes('connection being closed') || msg.includes('Invocation canceled')) {
-        console.log(`[SignalR DS] Invocación de ${method} cancelada (conexión cerrada)`);
+        logger.log(`[SignalR DS] Invocación de ${method} cancelada (conexión cerrada)`);
         return;
       }
-      console.error(`[SignalR DS] Error invocando ${method}:`, error);
+      logger.error(`[SignalR DS] Error invocando ${method}:`, error);
       throw error;
     }
   }
@@ -213,7 +214,7 @@ export class SignalRAjedrezDataSource {
         });
         this.attachedBridges.add(eventName);
       } catch (err) {
-        console.warn(`[SignalR DS] Error al registrar handler en hubConnection para ${eventName}:`, err);
+        logger.warn(`[SignalR DS] Error al registrar handler en hubConnection para ${eventName}:`, err);
       }
     }
   }
@@ -265,7 +266,7 @@ export class SignalRAjedrezDataSource {
         try {
           handler(...args);
         } catch (error) {
-          console.error(`[SignalR DS] Error en handler de ${eventName}:`, error);
+          logger.error(`[SignalR DS] Error en handler de ${eventName}:`, error);
         }
       });
     }

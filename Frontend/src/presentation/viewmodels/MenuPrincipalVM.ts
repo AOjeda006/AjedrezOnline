@@ -8,6 +8,7 @@
  * navegación (ver {@link module:core/gameState}).
  */
 
+import { logger } from '../../core/logger';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { ConnectionState } from '../../core/types';
 import { Partida } from '../../domain/entities/Partida';
@@ -98,7 +99,7 @@ export class MenuPrincipalVM {
         this.error = error?.message ?? 'Error al conectar';
         this.connectionState = 'Disconnected';
       });
-      console.error('Error en conectar:', error);
+      logger.error('Error en conectar:', error);
       throw error;
     } finally {
       runInAction(() => {
@@ -132,7 +133,7 @@ export class MenuPrincipalVM {
       runInAction(() => {
         this.error = error?.message ?? 'Error al crear sala';
       });
-      console.error('Error en crearSala:', error);
+      logger.error('Error en crearSala:', error);
       throw error;
     } finally {
       runInAction(() => { this.isLoading = false; });
@@ -168,7 +169,7 @@ export class MenuPrincipalVM {
       runInAction(() => {
         this.error = error?.message ?? 'Error al unirse a sala';
       });
-      console.error('Error en unirseSala:', error);
+      logger.error('Error en unirseSala:', error);
       throw error;
     } finally {
       runInAction(() => { this.isLoading = false; });
@@ -199,7 +200,7 @@ export class MenuPrincipalVM {
     // Cuando PartidaScreen monte, usePartida() leerá getPendingPartida() e inicializará
     // el VM inmediatamente, sin necesitar esperar a un nuevo evento PartidaIniciada.
     setPendingPartida(partida, this.nombreJugador);
-    console.log('[MenuPrincipalVM] Partida guardada como pendiente para PartidaScreen, jugador:', this.nombreJugador);
+    logger.log('[MenuPrincipalVM] Partida guardada como pendiente para PartidaScreen, jugador:', this.nombreJugador);
   }
 
   handleError(error: string): void {

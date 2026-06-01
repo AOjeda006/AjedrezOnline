@@ -8,6 +8,7 @@
  * navega a `/partida` cuando la partida arranca.
  */
 
+import { logger } from '../../core/logger';
 import React, { useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Alert, ActivityIndicator, Text } from 'react-native';
 import { observer } from 'mobx-react-lite';
@@ -25,7 +26,7 @@ import { InputNombre, Boton } from '../components/AjedrezComponents';
 const HUB_URL: string = (() => {
   const url = process.env.EXPO_PUBLIC_HUB_URL;
   if (!url) {
-    console.error(
+    logger.error(
       '[Config] EXPO_PUBLIC_HUB_URL no está definida. ' +
       'Añade EXPO_PUBLIC_HUB_URL=https://localhost:7040/ajedrezHub en tu .env ' +
       'y reinicia el servidor de desarrollo.'
@@ -103,7 +104,7 @@ export const MenuPrincipalScreen: React.FC = observer(() => {
   // Conecta al servidor en cuanto hay nombre de jugador (la conexión persiste al navegar).
   useEffect(() => {
     if (!nombreJugador.trim()) {
-      console.warn('MenuPrincipal: no hay nombre de jugador.');
+      logger.warn('MenuPrincipal: no hay nombre de jugador.');
       return;
     }
 
@@ -112,7 +113,7 @@ export const MenuPrincipalScreen: React.FC = observer(() => {
     }
 
     actions.conectar(HUB_URL).catch((err: any) => {
-      console.error('Error al conectar desde MenuPrincipal:', err);
+      logger.error('Error al conectar desde MenuPrincipal:', err);
     });
 
     // No cleanup needed - connection persists across navigation

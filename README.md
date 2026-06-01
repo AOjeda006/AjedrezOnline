@@ -92,7 +92,7 @@ respuesta visual inmediata (resaltar jugadas legales), pero nunca decide el resu
 | Categoría        | Tecnología                                                              |
 | ---------------- | ---------------------------------------------------------------------- |
 | Lenguaje         | C# 12 sobre **.NET 8**                                                 |
-| Host web         | ASP.NET Core (Kestrel) + Razor Pages                                   |
+| Host web         | ASP.NET Core (Kestrel)                                                 |
 | Tiempo real      | **SignalR** (WebSockets y Long Polling)                               |
 | Arquitectura     | Clean Architecture: `Domain` · `Infrastructure` · `ServidorAjedrez`   |
 | Casos de uso     | 12 *use cases* tras interfaces, uno por acción del juego               |
@@ -125,8 +125,8 @@ SignalR**. El servidor es autoritativo; el cliente refleja su estado.
         ┌───────────────────────────────┐         ┌───────────────────────────────┐
         │      CLIENTE (Expo / RN)      │         │       SERVIDOR (.NET 8)       │
         │                               │         │                               │
-        │  presentation (MVVM + MobX)   │         │  ServidorAjedrez (Razor +     │
-        │  data (SignalR DataSource)    │ ◄─────► │     SignalR Hub)              │
+        │  presentation (MVVM + MobX)   │         │  ServidorAjedrez (host del    │
+        │  data (SignalR DataSource)    │ ◄─────► │  hub SignalR)                 │
         │  domain (entidades + casos)   │ WebSock │  Domain (motor + casos de uso)│
         │  core (DI + tipos)            │  /Hub   │  Infrastructure (repos memoria)│
         └───────────────────────────────┘         └───────────────────────────────┘
@@ -152,7 +152,8 @@ dominio, que no conoce ni a SignalR ni a la UI.
   con `SemaphoreSlim`), `ConnectionManager` (diccionarios concurrentes conexión→sala
   y conexión→nombre) y el registro de dependencias (`AddInfrastructure`).
 - **`ServidorAjedrez`** — capa web: el **`AjedrezHub`** de SignalR (la API en tiempo
-  real), las Razor Pages y `Program.cs` (configuración de SignalR, CORS, sesión).
+  real) y `Program.cs` (configuración de SignalR y CORS). El único cliente del
+  servidor es la app de React Native; no existe un cliente web.
 
 ### Cliente — capas
 
@@ -188,8 +189,7 @@ AjedrezOnline/
 │   │   └── DI/                     # DependencyInjection.AddInfrastructure
 │   └── ServidorAjedrez/            # Proyecto web (host)
 │       ├── Hubs/AjedrezHub.cs      # Hub de SignalR — API en tiempo real
-│       ├── Pages/                  # Razor Pages
-│       └── Program.cs              # Arranque, SignalR, CORS, sesión
+│       └── Program.cs              # Arranque, SignalR, CORS
 │
 └── Frontend/                        # Cliente Expo / React Native (ClienteAjedrez)
     ├── app/                         # Rutas de Expo Router

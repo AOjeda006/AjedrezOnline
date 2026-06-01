@@ -15,6 +15,7 @@
  * El color del jugador local se determina por `connectionId` (ver {@link PartidaVM.handleReinicioPartida}).
  */
 
+import { logger } from '../../core/logger';
 import { isObservable, makeAutoObservable, runInAction, observable } from 'mobx';
 import { Color, Posicion, posicionesIguales, ResultadoPartida, TipoFinPartida, TipoPieza } from '../../core/types';
 
@@ -122,7 +123,7 @@ export class PartidaVM {
     this.ajedrezUseCase.subscribePartidaIniciada(this.handleReinicioPartida.bind(this));
     this.ajedrezUseCase.subscribeError(this.handleError.bind(this));
 
-    console.log('[PartidaVM] inicializarPartida:', {
+    logger.log('[PartidaVM] inicializarPartida:', {
       id: partida.id,
       salaId: partida.salaId,
       miColor,
@@ -145,7 +146,7 @@ export class PartidaVM {
    */
   seleccionarCasilla(posicion: Posicion): void {
     // Trazas para depuración: siempre registrar intento de selección
-    console.log('[TRACE PartidaVM] seleccionarCasilla invoked', {
+    logger.log('[TRACE PartidaVM] seleccionarCasilla invoked', {
       posicion,
       tableroExists: !!this.tablero,
       miColor: this.miColor,
@@ -157,26 +158,26 @@ export class PartidaVM {
     // Mensajes de ayuda en UI para depuración
     if (!this.tablero) {
       runInAction(() => { this.error = 'Tablero no inicializado'; });
-      console.warn('[PartidaVM] seleccionarCasilla: tablero no inicializado');
+      logger.warn('[PartidaVM] seleccionarCasilla: tablero no inicializado');
       return;
     }
     if (!this.miColor) {
       runInAction(() => { this.error = 'Color del jugador no determinado'; });
-      console.warn('[PartidaVM] seleccionarCasilla: miColor no definido');
+      logger.warn('[PartidaVM] seleccionarCasilla: miColor no definido');
       return;
     }
 
     // Si ya hay un movimiento pendiente, bloquear nuevas selecciones/movimientos
     if (this.movimientoPendiente) {
       runInAction(() => { this.error = 'Hay un movimiento pendiente. Confirma o deshaz antes de mover.'; });
-      console.warn('[PartidaVM] seleccionarCasilla: intento con movimiento pendiente');
+      logger.warn('[PartidaVM] seleccionarCasilla: intento con movimiento pendiente');
       return;
     }
 
     if (!this.esMiTurno()) {
       // No es el turno del jugador local: informar en consola y en UI
       runInAction(() => { this.error = 'No es tu turno'; });
-      console.warn('[PartidaVM] seleccionarCasilla: intento fuera de turno');
+      logger.warn('[PartidaVM] seleccionarCasilla: intento fuera de turno');
       return;
     }
 
@@ -187,14 +188,14 @@ export class PartidaVM {
 
     // Si hay pieza seleccionada y clickeamos un movimiento posible
     if (this.piezaSeleccionada && this.movimientosPosibles.some(m => posicionesIguales(m, posicion))) {
-      console.log('[TRACE PartidaVM] destino seleccionado es movimiento posible', { piezaSeleccionada: this.piezaSeleccionada.id, destino: posicion });
+      logger.log('[TRACE PartidaVM] destino seleccionado es movimiento posible', { piezaSeleccionada: this.piezaSeleccionada.id, destino: posicion });
       this.realizarMovimientoLocal(this.piezaSeleccionada, posicion);
       return;
     }
 
     // Si hay pieza propia en la casilla, seleccionarla
     if (pieza && pieza.color === this.miColor) {
-      console.log('[TRACE PartidaVM] seleccionando pieza propia', { piezaId: pieza.id, posicion });
+      logger.log('[TRACE PartidaVM] seleccionando pieza propia', { piezaId: pieza.id, posicion });
       const tablero = this.tablero; // Capturar para evitar error de null
       runInAction(() => {
         this.piezaSeleccionada = pieza;
@@ -204,7 +205,7 @@ export class PartidaVM {
     }
 
     // Si no, deseleccionar
-    console.log('[TRACE PartidaVM] casilla vacía o pieza enemiga (no seleccionada)', { posicion });
+    logger.log('[TRACE PartidaVM] casilla vacía o pieza enemiga (no seleccionada)', { posicion });
     runInAction(() => {
       this.piezaSeleccionada = null;
       this.movimientosPosibles = [];
@@ -220,16 +221,16 @@ export class PartidaVM {
    * servidor, que trae el tablero ya actualizado.
    */
   private async realizarMovimientoLocal(pieza: Pieza, destino: Posicion): Promise<void> {
-    console.log('[TRACE PartidaVM] realizarMovimientoLocal called with pieza:', pieza, 'destino:', destino);
+    logger.log('[TRACE PartidaVM] realizarMovimientoLocal called with pieza:', pieza, 'destino:', destino);
     if (!this.tablero || !this.partida) {
-      console.log('[TRACE PartidaVM] Early return: missing tablero or partida');
+      logger.log('[TRACE PartidaVM] Early return: missing tablero or partida');
       return;
     }
 
     // Detectar si es enroque
     this.proximoMovimientoEsEnroque =
       pieza.tipo === 'Rey' && Math.abs(pieza.posicion.columna - destino.columna) === 2;
-    console.log('[TRACE PartidaVM] esEnroque:', this.proximoMovimientoEsEnroque);
+    logger.log('[TRACE PartidaVM] esEnroque:', this.proximoMovimientoEsEnroque);
 
     // Crear movimiento
     const piezaCapturada = this.tablero.obtenerPieza(destino);
@@ -239,7 +240,7 @@ export class PartidaVM {
                        ((pieza.color === 'Blanca' && destino.fila === 0) ||
                         (pieza.color === 'Negra' && destino.fila === 7));
 
-    console.log('[TRACE PartidaVM] Detección de promoción:', {
+    logger.log('[TRACE PartidaVM] Detección de promoción:', {
       esPeon: pieza.tipo === 'Peon',
       colorPieza: pieza.color,
       destinoFila: destino.fila,
@@ -255,11 +256,11 @@ export class PartidaVM {
       esEnroque: this.proximoMovimientoEsEnroque,
       esPromocion,
     });
-    console.log('[TRACE PartidaVM] movimiento created:', movimiento);
+    logger.log('[TRACE PartidaVM] movimiento created:', movimiento);
 
     // Enviar el movimiento al backend (RealizarMovimiento)
     try {
-      console.log('[TRACE PartidaVM] Enviando movimiento al backend...');
+      logger.log('[TRACE PartidaVM] Enviando movimiento al backend...');
       await this.ajedrezUseCase.moverPieza(movimiento);
 
       // El backend responderá con "MovimientoRealizado" que actualizará el tablero
@@ -271,14 +272,14 @@ export class PartidaVM {
         this.error = null;
       });
 
-      console.log('[TRACE PartidaVM] Movimiento enviado al backend, esperando confirmación del usuario');
+      logger.log('[TRACE PartidaVM] Movimiento enviado al backend, esperando confirmación del usuario');
     } catch (error: any) {
       runInAction(() => {
         this.error = error?.message ?? String(error);
         this.piezaSeleccionada = null;
         this.movimientosPosibles = [];
       });
-      console.error('[ERROR PartidaVM] Error al enviar movimiento al backend:', error);
+      logger.error('[ERROR PartidaVM] Error al enviar movimiento al backend:', error);
     }
   }
 
@@ -291,22 +292,22 @@ export class PartidaVM {
    * usuario elija pieza. Si la confirmación falla, intenta **deshacer** el movimiento.
    */
   async confirmarMovimiento(): Promise<void> {
-    console.log('[TRACE PartidaVM] confirmarMovimiento called');
+    logger.log('[TRACE PartidaVM] confirmarMovimiento called');
     try {
       if (!this.movimientoPendiente) {
-        console.log('[PartidaVM] No movimiento pendiente');
+        logger.log('[PartidaVM] No movimiento pendiente');
         runInAction(() => { this.error = 'No hay movimiento pendiente para confirmar'; });
         return;
       }
 
-      console.log('[TRACE PartidaVM] Confirmando movimiento en el servidor...');
+      logger.log('[TRACE PartidaVM] Confirmando movimiento en el servidor...');
 
       // Check if the pending movement is a promotion
       const esPromocion = this.movimientoPendiente.esPromocion;
 
       // Llamar a confirmarJugada() que mapea a ConfirmarMovimiento del backend
       await this.ajedrezUseCase.confirmarJugada();
-      console.log('[TRACE PartidaVM] Movimiento confirmado en el backend');
+      logger.log('[TRACE PartidaVM] Movimiento confirmado en el backend');
 
       // El backend enviará TurnoActualizado y PromocionRequerida (si aplica)
       runInAction(() => {
@@ -322,13 +323,13 @@ export class PartidaVM {
       runInAction(() => {
         this.error = error?.message ?? String(error);
       });
-      console.error('Error confirmando movimiento:', error);
+      logger.error('Error confirmando movimiento:', error);
 
       // Si falla la confirmación, deshacer el movimiento
       try {
         await this.deshacerMovimiento();
       } catch (err) {
-        console.error('Error deshaciendo tras fallo de confirmación:', err);
+        logger.error('Error deshaciendo tras fallo de confirmación:', err);
       }
     }
   }
@@ -350,7 +351,7 @@ export class PartidaVM {
       // FIX: SIEMPRE llamar al backend porque el movimiento ya se envió con moverPieza()
       // El backend tiene el movimiento pendiente y necesita deshacerlo
       if (this.movimientoPendiente) {
-        console.log('[TRACE PartidaVM] Deshaciendo movimiento pendiente en el backend');
+        logger.log('[TRACE PartidaVM] Deshaciendo movimiento pendiente en el backend');
         await this.ajedrezUseCase.deshacerJugada();
 
         runInAction(() => {
@@ -366,10 +367,10 @@ export class PartidaVM {
 
       // Si no hay movimiento pendiente, no debería haber nada que deshacer
       runInAction(() => { this.error = 'No hay movimiento pendiente para deshacer'; });
-      console.warn('[PartidaVM] deshacerMovimiento: no hay movimiento pendiente');
+      logger.warn('[PartidaVM] deshacerMovimiento: no hay movimiento pendiente');
     } catch (error: any) {
       runInAction(() => { this.error = error?.message ?? String(error); });
-      console.error('Error deshaciendo:', error);
+      logger.error('Error deshaciendo:', error);
     }
   }
 
@@ -383,12 +384,12 @@ export class PartidaVM {
         this.solicitadasTablas = true;
         this.error = null;
       });
-      console.log('[PartidaVM] solicitarTablas invoked');
+      logger.log('[PartidaVM] solicitarTablas invoked');
     } catch (error: any) {
       runInAction(() => {
         this.error = error?.message ?? String(error);
       });
-      console.error('Error solicitando tablas:', error);
+      logger.error('Error solicitando tablas:', error);
     }
   }
 
@@ -403,12 +404,12 @@ export class PartidaVM {
         this.tablasOfrecidas = false;
         this.error = null;
       });
-      console.log('[PartidaVM] retirarTablas invoked');
+      logger.log('[PartidaVM] retirarTablas invoked');
     } catch (error: any) {
       runInAction(() => {
         this.error = error?.message ?? String(error);
       });
-      console.error('Error retirando tablas:', error);
+      logger.error('Error retirando tablas:', error);
     }
   }
 
@@ -416,14 +417,14 @@ export class PartidaVM {
    * Se rinde de la partida
    */
   async rendirse(): Promise<void> {
-    console.log('[PartidaVM] rendirse() invoked - starting');
+    logger.log('[PartidaVM] rendirse() invoked - starting');
     try {
-      console.log('[PartidaVM] Calling ajedrezUseCase.rendirsePartida()');
+      logger.log('[PartidaVM] Calling ajedrezUseCase.rendirsePartida()');
       await this.ajedrezUseCase.rendirsePartida();
       runInAction(() => { this.error = null; });
-      console.log('[PartidaVM] rendirse completed successfully');
+      logger.log('[PartidaVM] rendirse completed successfully');
     } catch (error: any) {
-      console.error('[PartidaVM] Error en rendirse:', error);
+      logger.error('[PartidaVM] Error en rendirse:', error);
       runInAction(() => {
         this.error = `Error al rendirse: ${error?.message ?? String(error)}`;
       });
@@ -441,7 +442,7 @@ export class PartidaVM {
         throw new Error('No hay movimiento pendiente de promoción');
       }
 
-      console.log('[PartidaVM] Enviando promoción al backend:', tipo);
+      logger.log('[PartidaVM] Enviando promoción al backend:', tipo);
       await this.ajedrezUseCase.seleccionarPromocion(tipo);
 
       runInAction(() => {
@@ -450,10 +451,10 @@ export class PartidaVM {
         this.error = null;
       });
 
-      console.log('[PartidaVM] Promoción completada y movimiento limpiado');
+      logger.log('[PartidaVM] Promoción completada y movimiento limpiado');
     } catch (error: any) {
       runInAction(() => { this.error = error?.message ?? String(error); });
-      console.error('Error promocionando:', error);
+      logger.error('Error promocionando:', error);
     }
   }
 
@@ -464,10 +465,10 @@ export class PartidaVM {
     try {
       await this.ajedrezUseCase.pedirReinicio();
       runInAction(() => { this.solicitadoReinicio = true; this.error = null; });
-      console.log('[PartidaVM] solicitarReinicio invoked');
+      logger.log('[PartidaVM] solicitarReinicio invoked');
     } catch (error: any) {
       runInAction(() => { this.error = error?.message ?? String(error); });
-      console.error('Error solicitando reinicio:', error);
+      logger.error('Error solicitando reinicio:', error);
     }
   }
 
@@ -482,10 +483,10 @@ export class PartidaVM {
         this.oponenteSolicitoReinicio = false;
         this.error = null;
       });
-      console.log('[PartidaVM] retirarReinicio invoked');
+      logger.log('[PartidaVM] retirarReinicio invoked');
     } catch (error: any) {
       runInAction(() => { this.error = error?.message ?? String(error); });
-      console.error('Error retirando reinicio:', error);
+      logger.error('Error retirando reinicio:', error);
     }
   }
 
@@ -523,7 +524,7 @@ export class PartidaVM {
 
   /** Evento `MovimientoRealizado`: sustituye el tablero local por el del servidor y refresca los capturados. */
   handleMovimiento(movimiento: Movimiento, tablero: Tablero): void {
-    console.log('[PartidaVM] handleMovimiento recibido del backend', {
+    logger.log('[PartidaVM] handleMovimiento recibido del backend', {
       movId: movimiento.id,
       esPromocion: movimiento.esPromocion,
       piezasEnTablero: tablero.piezas.length,
@@ -547,13 +548,13 @@ export class PartidaVM {
       // no aquí: los ids de movimiento de cliente y servidor no coinciden.
     });
 
-    console.log('[PartidaVM] Tablero actualizado desde el backend', {
+    logger.log('[PartidaVM] Tablero actualizado desde el backend', {
       piezasActuales: this.tablero?.piezas.length
     });
   }
 
   handleTableroActualizado(tablero: Tablero): void {
-    console.log('[PartidaVM] handleTableroActualizado recibido del backend (deshacer)', {
+    logger.log('[PartidaVM] handleTableroActualizado recibido del backend (deshacer)', {
       piezasEnTablero: tablero.piezas.length,
       piezasEliminadas: tablero.piezas.filter(p => p.eliminada).length
     });
@@ -571,7 +572,7 @@ export class PartidaVM {
       this.error = null;
     });
 
-    console.log('[PartidaVM] Tablero sincronizado después de deshacer', {
+    logger.log('[PartidaVM] Tablero sincronizado después de deshacer', {
       piezasActuales: this.tablero?.piezas.length
     });
   }
@@ -599,7 +600,7 @@ export class PartidaVM {
         this.error = null;
       }
     });
-    console.log('[PartidaVM] handleTurnoActualizado recibido', { turno, numeroTurno });
+    logger.log('[PartidaVM] handleTurnoActualizado recibido', { turno, numeroTurno });
   }
 
   /**
@@ -613,7 +614,7 @@ export class PartidaVM {
   handleTablasActualizadas(blancas: boolean, negras: boolean): void {
     // Don't process events if we're leaving
     if (this.estaSaliendo) {
-      console.log('[PartidaVM] handleTablasActualizadas: ignorando evento porque estamos saliendo');
+      logger.log('[PartidaVM] handleTablasActualizadas: ignorando evento porque estamos saliendo');
       return;
     }
 
@@ -635,7 +636,7 @@ export class PartidaVM {
         this.error = null;
       }
     });
-    console.log('[PartidaVM] handleTablasActualizadas recibido', { blancas, negras });
+    logger.log('[PartidaVM] handleTablasActualizadas recibido', { blancas, negras });
   }
 
   /**
@@ -647,7 +648,7 @@ export class PartidaVM {
   handlePartidaFinalizada(resultado: ResultadoPartida, tipo: TipoFinPartida, ganador?: string): void {
     // Don't process events if we're leaving
     if (this.estaSaliendo) {
-      console.log('[PartidaVM] handlePartidaFinalizada: ignorando evento porque estamos saliendo');
+      logger.log('[PartidaVM] handlePartidaFinalizada: ignorando evento porque estamos saliendo');
       return;
     }
 
@@ -660,7 +661,7 @@ export class PartidaVM {
       }
       this.error = null;
     });
-    console.log('[PartidaVM] handlePartidaFinalizada recibido', { resultado, tipo, ganador });
+    logger.log('[PartidaVM] handlePartidaFinalizada recibido', { resultado, tipo, ganador });
   }
 
   handleJaqueActualizado(hayJaque: boolean): void {
@@ -675,20 +676,20 @@ export class PartidaVM {
         this.error = null;
       }
     });
-    console.log('[PartidaVM] handleJaqueActualizado recibido', hayJaque);
+    logger.log('[PartidaVM] handleJaqueActualizado recibido', hayJaque);
   }
 
   handlePromocionRequerida(): void {
     runInAction(() => {
       this.mostrarPromocion = true;
     });
-    console.log('[PartidaVM] handlePromocionRequerida recibido');
+    logger.log('[PartidaVM] handlePromocionRequerida recibido');
   }
 
   handleReinicioActualizado(blancas: boolean, negras: boolean): void {
     // Don't process events if we're leaving
     if (this.estaSaliendo) {
-      console.log('[PartidaVM] handleReinicioActualizado: ignorando evento porque estamos saliendo');
+      logger.log('[PartidaVM] handleReinicioActualizado: ignorando evento porque estamos saliendo');
       return;
     }
 
@@ -701,7 +702,7 @@ export class PartidaVM {
         this.oponenteSolicitoReinicio = blancas;
       }
     });
-    console.log('[PartidaVM] handleReinicioActualizado recibido', { blancas, negras, miColor: this.miColor });
+    logger.log('[PartidaVM] handleReinicioActualizado recibido', { blancas, negras, miColor: this.miColor });
   }
 
   /**
@@ -712,11 +713,11 @@ export class PartidaVM {
    * intercambiar colores en la revancha), con el nombre como respaldo.
    */
   handleReinicioPartida(partida: Partida): void {
-    console.log('[PartidaVM] handleReinicioPartida: nueva partida recibida', partida.id);
+    logger.log('[PartidaVM] handleReinicioPartida: nueva partida recibida', partida.id);
 
     // Don't process events if we're leaving
     if (this.estaSaliendo) {
-      console.log('[PartidaVM] handleReinicioPartida: ignorando evento porque estamos saliendo');
+      logger.log('[PartidaVM] handleReinicioPartida: ignorando evento porque estamos saliendo');
       return;
     }
 
@@ -765,21 +766,21 @@ export class PartidaVM {
   handleOponenteAbandono(_connectionId: string): void {
     // Don't process events if we're leaving
     if (this.estaSaliendo) {
-      console.log('[PartidaVM] handleOponenteAbandono: ignorando evento porque estamos saliendo');
+      logger.log('[PartidaVM] handleOponenteAbandono: ignorando evento porque estamos saliendo');
       return;
     }
 
     runInAction(() => {
       this.oponenteAbandono = true;
     });
-    console.log('[PartidaVM] handleOponenteAbandono: oponente se fue');
+    logger.log('[PartidaVM] handleOponenteAbandono: oponente se fue');
   }
 
   handleError(error: string): void {
     runInAction(() => {
       this.error = error;
     });
-    console.error('[PartidaVM] handleError recibido', error);
+    logger.error('[PartidaVM] handleError recibido', error);
   }
 
   // Métodos auxiliares

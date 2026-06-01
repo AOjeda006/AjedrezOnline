@@ -9,6 +9,7 @@
  * tolerante (params de ruta nativos o de `expo-router`).
  */
 
+import { logger } from '../../core/logger';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef, useState } from 'react';
@@ -130,12 +131,12 @@ export const PartidaScreen = observer((props: any) => {
     try {
       actions.volverAlMenu();
     } catch (err) {
-      console.error('Error en volverAlMenu:', err);
+      logger.error('Error en volverAlMenu:', err);
     }
     try {
       router.replace(`/menu-principal?nombreJugador=${encodeURIComponent(nombreJugador)}`);
     } catch (err) {
-      console.error('Error navegando al menú:', err);
+      logger.error('Error navegando al menú:', err);
     }
   };
 
@@ -191,7 +192,7 @@ export const PartidaScreen = observer((props: any) => {
             try {
               actions.seleccionarCasilla(pos);
             } catch (err) {
-              console.error('Error al seleccionar casilla:', err);
+              logger.error('Error al seleccionar casilla:', err);
             }
           }}
           miColor={state.miColor}
@@ -225,32 +226,32 @@ export const PartidaScreen = observer((props: any) => {
           try {
             actions.confirmarMovimiento();
           } catch (err) {
-            console.error('Error confirmando movimiento:', err);
+            logger.error('Error confirmando movimiento:', err);
           }
         }}
         deshacerMovimiento={() => {
           try {
             actions.deshacerMovimiento();
           } catch (err) {
-            console.error('Error deshaciendo movimiento:', err);
+            logger.error('Error deshaciendo movimiento:', err);
           }
         }}
         solicitarTablas={() => {
           try {
             actions.solicitarTablas();
           } catch (err) {
-            console.error('Error solicitando tablas:', err);
+            logger.error('Error solicitando tablas:', err);
           }
         }}
         retirarTablas={() => {
           try {
             actions.retirarTablas();
           } catch (err) {
-            console.error('Error retirando tablas:', err);
+            logger.error('Error retirando tablas:', err);
           }
         }}
         rendirse={() => {
-          console.log('[PartidaScreen] Función rendirse llamada, mostrando modal');
+          logger.log('[PartidaScreen] Función rendirse llamada, mostrando modal');
           setMostrarConfirmacionRendirse(true);
         }}
         hayMovimientoPendiente={!!state.movimientoPendiente}
@@ -265,7 +266,7 @@ export const PartidaScreen = observer((props: any) => {
           try {
             await actions.promocionarPeon(tipo);
           } catch (err) {
-            console.error('Error en promocion:', err);
+            logger.error('Error en promocion:', err);
           }
         }}
       />
@@ -289,12 +290,12 @@ export const PartidaScreen = observer((props: any) => {
         titulo="¿Rendirse?"
         mensaje="Una vez que te rindas, perderás la partida. ¿Estás seguro?"
         onConfirmar={() => {
-          console.log('[PartidaScreen] Rendirse confirmado, llamando a actions.rendirse()');
+          logger.log('[PartidaScreen] Rendirse confirmado, llamando a actions.rendirse()');
           setMostrarConfirmacionRendirse(false);
           actions.rendirse();
         }}
         onCancelar={() => {
-          console.log('[PartidaScreen] Rendirse cancelado');
+          logger.log('[PartidaScreen] Rendirse cancelado');
           setMostrarConfirmacionRendirse(false);
         }}
       />
